@@ -1,0 +1,19 @@
+{
+	"manifest_version": 3,
+	"name": "Webflow Attribute Class Suggestion Extension",
+	"version": "1.0.0",
+   	"description": "Attribute Class Suggestion is Webflow handy extension for auto class name suggestion feature in custom attribute on setting tab panel",
+	"icons": {
+		"16": "public/images/store-icon-16.png",
+		"48": "public/images/store-icon-48.png",
+		"128": "public/images/store-icon-128.png"
+	},
+	"host_permissions": [ "*://webflow.com/*", "*://*.design.webflow.com/*" ],
+	"content_scripts": [
+		{
+			"matches": [ "*://webflow.com/*", "*://*.design.webflow.com/*" ],
+			"js": ["content.js"],
+			"run_at": "document_start"
+		}
+	]
+}
