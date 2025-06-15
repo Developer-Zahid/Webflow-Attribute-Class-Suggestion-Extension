@@ -90,10 +90,16 @@ function getCustomClassAttrInputElement() {
 function normalizeClassName(name) {
 	return name
 		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, "-") // replace special chars/spaces with hyphen
+		.replace(/^_+/g, "") // remove leading underscores
+		.replace(/[^a-z0-9_]+/g, "-") // replace special chars/spaces (but not _) with hyphen
 		.replace(/^-+/, "") // remove leading hyphens
-		.replace(/^-?\d/, (match) => "_" + match) // prefix if starting with digit
+		.replace(/^\d/, (match) => `_${match}`) // prefix if starting with digit
 		.replace(/-+/g, "-"); // collapse multiple hyphens
+}
+
+function normalizeForSearch(str) {
+	if (!str) return "";
+	return str.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
 // Read classes from Webflow's internal store
@@ -202,9 +208,14 @@ function renderClassList(targetInput) {
 	});
 
 	searchInput.addEventListener("input", () => {
-		const search = searchInput.value.trim().toLowerCase();
+		const search = searchInput.value;
+		// Normalize the search input
+		const normalizedSearch = normalizeForSearch(search);
+
 		buttons.forEach(({ className, item }) => {
-			const match = className.toLowerCase().includes(search);
+			// Normalize the class name before comparing
+			const normalizedClassName = normalizeForSearch(className);
+			const match = normalizedClassName.includes(normalizedSearch);
 			item.style.display = match ? "" : "none";
 		});
 	});
