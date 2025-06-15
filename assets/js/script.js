@@ -81,9 +81,10 @@ document.head.appendChild(style);
 // Get the target input for setting class
 function getCustomClassAttrInputElement() {
 	return (
-		document.querySelector('[data-automation-id="Type--Plugin_Text_Name"][value="class"]')
-			?.closest('[data-automation-id="ExpressionEditor-fieldWrapper-Name"]')
-			?.nextElementSibling?.querySelector('[data-automation-id="Type--Plugin_Text_Value"]') || null
+		document.querySelector('[data-automation-id^="Type--Plugin_Text"][value="class"]')
+            ?.closest('[data-automation-id^="ExpressionEditor-fieldWrapper-"]')
+			?.parentElement?.querySelector('[data-automation-id="ExpressionEditor-fieldWrapper-value" i]')
+			?.querySelector('[data-automation-id^="Type--Plugin_Text"]') || null
 	);
 }
 
