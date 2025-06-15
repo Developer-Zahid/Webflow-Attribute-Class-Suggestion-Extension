@@ -17,15 +17,14 @@
 		}
 	},
 	"permissions": [
-		"scripting",
-		"storage"
+		"scripting"
 	],
-	"host_permissions": [
-		"https://cdn.jsdelivr.net/*",
-		"*://webflow.com/*",
-		"*://*.design.webflow.com/*"
-	],
-	"background": {
-		"service_worker": "background.js"
-	}
+	"host_permissions": [ "*://webflow.com/*", "*://*.design.webflow.com/*", "https://cdn.jsdelivr.net/*" ],
+	"content_scripts": [
+		{
+			"matches": [ "*://webflow.com/*", "*://*.design.webflow.com/*" ],
+			"js": ["content.js"],
+			"run_at": "document_end"
+		}
+	]
 }

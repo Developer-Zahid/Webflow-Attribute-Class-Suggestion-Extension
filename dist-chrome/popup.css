@@ -1,0 +1,108 @@
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --secondary: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --border: 214.3 31.8% 91.4%;
+  --green-500: 142.1 76.2% 46.1%;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe Emoji", "Segoe UI Symbol";
+  margin: 0;
+  width: 320px;
+}
+
+.container {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: hsl(var(--secondary));
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+}
+
+.toggle-container .label-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: hsl(var(--green-500));
+}
+
+input:checked + .slider:before {
+  transform: translateX(16px);
+}
+
+.alert {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #fef2f2; /* A light red */
+  color: #991b1b; /* A dark red */
+  border: 1px solid #fecaca; /* A light red border */
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  box-sizing: border-box;
+  margin-top: 1rem;
+}

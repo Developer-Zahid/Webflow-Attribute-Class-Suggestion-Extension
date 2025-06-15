@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webflow Attribute Class Suggestion Extension</title>
+    <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+    <div class="container">
+      <h1>Webflow Attribute Class Suggestion Extension</h1>
+
+      <div class="toggle-container">
+        <label for="extension-toggle" id="toggle-label" class="label-text">Extension is Active</label>
+        <label class="switch">
+          <input type="checkbox" id="extension-toggle" />
+          <span class="slider round"></span>
+        </label>
+      </div>
+      
+      <div id="unsaved-alert" class="alert" style="display: none;">
+        You have to wait until save changes in Webflow before deactivating.
+      </div>
+    </div>
+
+    <script src="popup.js" defer></script>
+</body>
+</html>
