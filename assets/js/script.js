@@ -56,6 +56,7 @@ style.innerHTML = `
     background-repeat: no-repeat;
     background-position: calc(100% - 3px) center;
     background-size: 16px;
+	overflow-wrap: anywhere;
 }
 .wf-custom-class__list__button:is(:hover, :focus-visible) {
     color: var(--colors-action-secondary-text);
@@ -88,14 +89,105 @@ function getCustomClassAttrInputElement() {
 	);
 }
 
+function getDispatcher() {
+    return window._webflow?.dispatch;
+}
+
+function createWebflowClassHiddenly(className) {
+    const dispatch = getDispatcher();
+    const uiNodeStoreState = window._webflow?.getStoreState("UiNodeStore");
+
+    if (!dispatch || !uiNodeStoreState) {
+        console.error("Webflow dispatch function or UiNodeStore not found.");
+        return;
+    }
+
+    // 1. Get the currently selected node's path BEFORE we clear it.
+    const currentSelectedNode = {
+        nativeIdPath: uiNodeStoreState.selectedNativeIdPath,
+        nativeIdInCurrentComponent: uiNodeStoreState.selectedNodeNativeId
+    };
+
+    // 2. This action clears the current element selection.
+    const clearSelectionDispatchAction = {
+        type: "NODE_CLICKED",
+        payload: {
+            nativeIdPath: [],
+            nativeIdInCurrentComponent: null,
+            isMultiSelectModifierKeyActive: false,
+            source: ""
+        }
+    };
+
+    // 3. This action creates the class definition.
+    const addNewClassDispatchAction = {
+        type: "STYLE_BLOCK_ADDED",
+        payload: {
+            suggestion: {
+                _id: crypto.randomUUID(),
+                create: true,
+                fuzzy: "",
+                global: true,
+                type: "class",
+                name: className,
+                comb: ""
+            }
+        }
+    };
+    
+    try {
+        console.log("Dispatching CLEAR SELECTION action:", clearSelectionDispatchAction);
+        dispatch(clearSelectionDispatchAction);
+        
+        setTimeout(() => {
+            console.log("Dispatching CREATE action:", addNewClassDispatchAction);
+            dispatch(addNewClassDispatchAction);
+            console.log(`Successfully dispatched action to create hidden class: "${className}"`);
+
+            // 4. If there was an original selection, dispatch an action to re-select it.
+            if (currentSelectedNode.nativeIdPath && currentSelectedNode.nativeIdPath.length > 0) {
+                const reselectAction = {
+                    type: "NODE_CLICKED",
+                    payload: {
+                        nativeIdPath: currentSelectedNode.nativeIdPath,
+                        nativeIdInCurrentComponent: currentSelectedNode.nativeIdInCurrentComponent,
+                        isMultiSelectModifierKeyActive: false,
+                        source: "navigator" // Match the source from user interaction logs
+                    }
+                };
+                console.log("Dispatching RE-SELECT action:", reselectAction);
+                dispatch(reselectAction);
+            }
+        }, 100); // 100ms delay for robustness
+        
+    } catch (error) {
+        console.error("An error occurred while dispatching actions:", error);
+    }
+}
+
+/**
+ * Normalizes a string to be a valid CSS class name, matching Webflow's sanitization logic.
+ * @param {string} name The raw class name.
+ * @returns {string} The normalized class name.
+*/
 function normalizeClassName(name) {
-	return name
+	if (!name) return "";
+	
+	// Step 1: Lowercase and replace any sequence of invalid characters 
+	// (anything not a-z, 0-9, underscore, or hyphen) with a single hyphen.
+	let sanitized = name
 		.toLowerCase()
-		.replace(/^_+/g, "") // remove leading underscores
-		.replace(/[^a-z0-9_]+/g, "-") // replace special chars/spaces (but not _) with hyphen
-		.replace(/^-+/, "") // remove leading hyphens
-		.replace(/^\d/, (match) => `_${match}`) // prefix if starting with digit
-		.replace(/-+/g, "-"); // collapse multiple hyphens
+		.replace(/[^a-z0-9_-]+/g, "-");
+
+	// Step 2: Trim any combination of hyphens and underscores from the start and end.
+	sanitized = sanitized.replace(/^[-_]+|[-_]+$/g, "");
+
+	// Step 3: If the result now starts with a digit, prefix with an underscore.
+	if (/^\d/.test(sanitized)) {
+		return `_${sanitized}`;
+	}
+
+	return sanitized;
 }
 
 function normalizeForSearch(str) {
@@ -103,20 +195,40 @@ function normalizeForSearch(str) {
 	return str.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-// Read classes from Webflow's internal store
+/**
+ * Scans Webflow's internal store to get all defined class names.
+ * @returns {string[]} An array of class names, prefixed with a ".".
+*/
 function getWebflowClasses() {
-	const classNames = [];
-	const blocks = window._webflow?.stores?.StyleBlockStore?.state?.styleBlocks || [];
+	try {
+		const styleBlocks = window._webflow?.getStoreState("StyleBlockStore")?.styleBlocks;
 
-	blocks
-		.filter((block) => block.get("type") === "class")
-		.map((classBlock) => {
-			const rawName = classBlock.get("name");
-			const normalized = normalizeClassName(rawName);
-			classNames.push(normalized);
-		});
+		if (!styleBlocks || typeof styleBlocks.toArray !== 'function') {
+			console.warn("Could not find the Webflow StyleBlockStore or it's not a Map.");
+			return [];
+		}
 
-	return [...new Set(classNames)]; // Remove duplicates
+		const classNames = new Set();
+		const blocks = styleBlocks.toArray();
+
+		blocks
+			.filter((block) => block.get("type") === "class")
+			.forEach((classBlock) => {
+				const rawName = classBlock.get("name");
+				if (rawName) {
+					const normalized = normalizeClassName(rawName);
+					if (normalized) {
+						classNames.add(normalized);
+					}
+				}
+			});
+			
+		return Array.from(classNames);
+
+	} catch (error) {
+		console.error("❌ An error occurred while fetching Webflow classes:", error);
+		return [];
+	}
 }
 
 // Set value with React-compatible trigger
